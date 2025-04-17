@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Game 4: Spelling Balloon Pop</title>
+  <title>Game 4: Word Unscramble</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
@@ -11,6 +11,7 @@
       margin: 0;
       padding: 0;
     }
+
     nav {
       background-color: #4CAF50;
       padding: 10px 20px;
@@ -19,50 +20,76 @@
       justify-content: space-between;
       align-items: center;
     }
+
     nav h1 {
       margin: 0;
       font-size: 20px;
     }
+
     nav .nav-links a {
       color: white;
       text-decoration: none;
       margin-left: 20px;
       font-weight: bold;
     }
+
     nav .nav-links a:hover {
       text-decoration: underline;
     }
+
     .container {
       padding: 20px;
       max-width: 800px;
       margin: auto;
       text-align: center;
     }
-    .balloon {
-      width: 60px;
-      height: 80px;
-      border-radius: 50%;
+
+    #scrambled-letters {
+      margin: 20px 0;
+    }
+
+    .letter {
+      display: inline-block;
       background-color: #ffcccb;
-      display: flex;
-      justify-content: center;
-      align-items: center;
+      padding: 10px 20px;
+      margin: 5px;
       font-size: 24px;
-      color: black;
-      position: absolute;
+      border-radius: 10px;
       cursor: pointer;
+      transition: transform 0.2s;
     }
-    #game-area {
-      position: relative;
-      width: 100%;
-      height: 400px;
-      border: 2px solid #aaa;
-      overflow: hidden;
-      margin-top: 20px;
-      background: #e0f7fa;
+
+    .letter.correct {
+      background-color: #a5d6a7;
     }
-    #word-display {
+
+    .letter.wrong {
+      animation: shake 0.3s;
+    }
+
+    @keyframes shake {
+      0% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      50% { transform: translateX(5px); }
+      75% { transform: translateX(-5px); }
+      100% { transform: translateX(0); }
+    }
+
+    #word-progress {
       font-size: 28px;
       font-weight: bold;
+      margin-top: 20px;
+    }
+
+    #language-select {
+      margin-top: 10px;
+      font-size: 16px;
+      padding: 5px;
+    }
+
+    #hint {
+      font-size: 18px;
+      font-style: italic;
       margin-top: 10px;
     }
   </style>
@@ -75,67 +102,103 @@
       <a href="login.html">Login</a>
     </div>
   </nav>
+
   <div class="container">
-    <h2>Spelling Balloon Pop</h2>
-    <p>Pop the balloons in the correct order to spell the word!</p>
-    <div id="word-display"></div>
-    <div id="game-area"></div>
+    <h2>Word Unscramble</h2>
+    <label for="language-select">Language / Wika / Bahasa:</label>
+    <select id="language-select" onchange="showHint()">
+      <option value="en">English</option>
+      <option value="tl">Tagalog</option>
+      <option value="id">Bahasa</option>
+    </select>
+    <p>Click the letters in the correct order to unscramble the word!</p>
+    <div id="hint"></div>
+    <div id="word-progress"></div>
+    <div id="scrambled-letters"></div>
     <p>Score: <span id="score">0</span></p>
   </div>
 
   <script>
-    const words = ["apple", "banana", "grape", "mango", "chair", "spoon"];
+    const wordData = {
+      apple: { tl: "mansanas", id: "apel" },
+      flower: { tl: "bulaklak", id: "bunga" },
+      window: { tl: "bintana", id: "jendela" },
+      school: { tl: "paaralan", id: "sekolah" },
+      planet: { tl: "planeta", id: "planet" },
+      bridge: { tl: "tulay", id: "jembatan" }
+    };
+
+    const words = Object.keys(wordData);
     let currentWord = "";
+    let scrambled = [];
     let currentIndex = 0;
     let score = 0;
-    const gameArea = document.getElementById("game-area");
-    const wordDisplay = document.getElementById("word-display");
+    let currentLang = "en";
+
+    const wordProgress = document.getElementById("word-progress");
+    const scrambledContainer = document.getElementById("scrambled-letters");
+    const scoreDisplay = document.getElementById("score");
+    const hintDisplay = document.getElementById("hint");
+    const languageSelect = document.getElementById("language-select");
+
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
 
     function startGame() {
       currentWord = words[Math.floor(Math.random() * words.length)];
+      scrambled = shuffle(currentWord.split("")).slice();
       currentIndex = 0;
-      wordDisplay.textContent = "_ ".repeat(currentWord.length).trim();
-      gameArea.innerHTML = "";
-      for (let i = 0; i < currentWord.length * 2; i++) {
-        const letter = document.createElement("div");
-        letter.className = "balloon";
-        letter.style.left = Math.random() * (gameArea.clientWidth - 60) + "px";
-        letter.style.top = Math.random() * (gameArea.clientHeight - 100) + "px";
-        const isCorrect = Math.random() > 0.5 && currentIndex < currentWord.length;
-        letter.textContent = isCorrect ? currentWord[currentIndex++] : randomLetter();
-        letter.onclick = () => handlePop(letter);
-        gameArea.appendChild(letter);
-      }
-      currentIndex = 0;
+      wordProgress.textContent = "_ ".repeat(currentWord.length).trim();
+      scrambledContainer.innerHTML = "";
+      showHint();
+
+      scrambled.forEach((char) => {
+        const span = document.createElement("span");
+        span.textContent = char;
+        span.className = "letter";
+        span.onclick = () => handleClick(span, char);
+        scrambledContainer.appendChild(span);
+      });
     }
 
-    function handlePop(balloon) {
-      if (balloon.textContent === currentWord[currentIndex]) {
-        balloon.remove();
+    function handleClick(span, char) {
+      if (char === currentWord[currentIndex]) {
+        span.classList.add("correct");
+        span.onclick = null;
+        updateProgress();
         currentIndex++;
-        updateDisplay();
         if (currentIndex === currentWord.length) {
           score += 10;
-          document.getElementById("score").textContent = score;
+          scoreDisplay.textContent = score;
           setTimeout(startGame, 1000);
         }
       } else {
-        score = Math.max(score - 5, 0);
-        document.getElementById("score").textContent = score;
+        span.classList.add("wrong");
+        setTimeout(() => span.classList.remove("wrong"), 300);
       }
     }
 
-    function updateDisplay() {
-      let display = "";
+    function updateProgress() {
+      let progress = "";
       for (let i = 0; i < currentWord.length; i++) {
-        display += i < currentIndex ? currentWord[i] + " " : "_ ";
+        progress += i < currentIndex ? currentWord[i] + " " : "_ ";
       }
-      wordDisplay.textContent = display.trim();
+      wordProgress.textContent = progress.trim();
     }
 
-    function randomLetter() {
-      const letters = "abcdefghijklmnopqrstuvwxyz";
-      return letters[Math.floor(Math.random() * letters.length)];
+    function showHint() {
+      currentLang = languageSelect.value;
+      if (currentLang === "en") {
+        hintDisplay.textContent = "Hint: " + currentWord;
+      } else {
+        const translated = wordData[currentWord][currentLang];
+        hintDisplay.textContent = "Hint: " + translated + " (" + currentLang.toUpperCase() + ")";
+      }
     }
 
     window.onload = startGame;
