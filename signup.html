@@ -1,0 +1,118 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f7f9fc;
+      margin: 0;
+      padding: 0;
+    }
+    nav {
+      background-color: #4CAF50;
+      padding: 10px 20px;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    nav h1 {
+      margin: 0;
+      font-size: 20px;
+    }
+    nav .nav-links a {
+      color: white;
+      text-decoration: none;
+      margin-left: 20px;
+      font-weight: bold;
+    }
+    nav .nav-links a:hover {
+      text-decoration: underline;
+    }
+    .container {
+      padding: 20px;
+      max-width: 800px;
+      margin: auto;
+    }
+  </style>
+
+  <meta charset="UTF-8">
+  <title>Sign Up - English Games</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f9f9ff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .signup-box {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    input {
+      display: block;
+      margin: 10px auto;
+      padding: 10px;
+      width: 220px;
+      font-size: 16px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <h1>English Games</h1>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="login.html">Login</a>
+      <a href="signup.html">Sign Up</a>
+    </div>
+  </nav>
+
+<div class='container'>
+  <div class="signup-box">
+    <h2>Create an Account</h2>
+    <input type="text" id="newUsername" placeholder="Enter new username" />
+    <button onclick="signup()">Sign Up</button>
+  </div>
+
+  <script>
+    function signup() {
+      const username = document.getElementById("newUsername").value.trim();
+      if (!username) return alert("Username cannot be empty.");
+
+      let users = JSON.parse(localStorage.getItem("scores")) || {};
+      if (users[username]) {
+        alert("User already exists.");
+        return;
+      }
+
+      users[username] = { game1: 0, game2: 0, game3: 0 };
+      localStorage.setItem("scores", JSON.stringify(users));
+      localStorage.setItem("currentUser", username);
+      alert("Signup successful! You are now logged in.");
+      window.location.href = "index.html";
+    }
+  </script>
+</div>
+</body>
+</html>

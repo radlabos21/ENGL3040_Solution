@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Game 3: Synonym Match</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #fff7e6;
+      margin: 0;
+      padding: 0;
+    }
+    nav {
+      background-color: #4CAF50;
+      padding: 10px 20px;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    nav h1 {
+      margin: 0;
+      font-size: 20px;
+    }
+    nav .nav-links a {
+      color: white;
+      text-decoration: none;
+      margin-left: 20px;
+      font-weight: bold;
+    }
+    nav .nav-links a:hover {
+      text-decoration: underline;
+    }
+    .container {
+      padding: 20px;
+      max-width: 800px;
+      margin: auto;
+      text-align: center;
+    }
+    h1 {
+      color: #cc7000;
+    }
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 150px);
+      gap: 15px;
+      margin-top: 30px;
+      justify-content: center;
+    }
+    .card {
+      background-color: #ffe0b3;
+      border: 2px solid #cc7000;
+      border-radius: 10px;
+      padding: 20px;
+      text-align: center;
+      font-size: 18px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .card.matched {
+      background-color: #b3ffb3;
+      border-color: #00cc00;
+      cursor: default;
+    }
+    #score {
+      margin-top: 20px;
+      font-size: 20px;
+    }
+    .leaderboard {
+      margin-top: 20px;
+      font-size: 14px;
+      background: #fff;
+      border: 1px solid #999;
+      padding: 10px;
+      border-radius: 10px;
+      max-width: 250px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #e05d5d;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #c14d4d;
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <h1>English Games</h1>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="login.html">Login</a>
+    </div>
+  </nav>
+
+  <div class='container'>
+    <h1>Match the Synonyms</h1>
+    <div id="score">Score: 0</div>
+    <div class="card-grid" id="cardGrid"></div>
+    <div class="leaderboard" id="leaderboard"></div>
+    <button onclick="exitGame()">Exit</button>
+  </div>
+
+  <script>
+    const pairs = [
+      ["big", "large"], ["small", "tiny"], ["happy", "joyful"],
+      ["fast", "quick"], ["angry", "mad"], ["smart", "intelligent"],
+      ["brave", "courageous"], ["silent", "quiet"], ["sad", "unhappy"],
+      ["start", "begin"], ["end", "finish"], ["rich", "wealthy"],
+      ["buy", "purchase"], ["clean", "spotless"], ["cold", "chilly"]
+    ];
+    let cards = [], score = 0, selected = [], matched = 0;
+
+    function shuffle(array) {
+      return array.sort(() => Math.random() - 0.5);
+    }
+
+    function renderCards() {
+      const grid = document.getElementById('cardGrid');
+      grid.innerHTML = '';
+      cards = shuffle(pairs.flat()).map(word => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.textContent = word;
+        card.onclick = () => handleCardClick(card, word);
+        grid.appendChild(card);
+        return { element: card, word };
+      });
+    }
+
+    function handleCardClick(card, word) {
+      if (card.classList.contains('matched') || selected.includes(card)) return;
+
+      selected.push(card);
+      card.style.backgroundColor = '#ffd480';
+
+      if (selected.length === 2) {
+        const w1 = selected[0].textContent, w2 = selected[1].textContent;
+        const isMatch = pairs.some(pair => pair.includes(w1) && pair.includes(w2));
+        if (isMatch) {
+          selected.forEach(c => c.classList.add('matched'));
+          score += 10;
+          matched += 2;
+        } else {
+          setTimeout(() => selected.forEach(c => c.style.backgroundColor = ''), 800);
+        }
+        selected = [];
+        document.getElementById('score').textContent = 'Score: ' + score;
+        if (matched === cards.length) saveScore(score);
+      }
+    }
+
+    function saveScore(finalScore) {
+      const user = localStorage.getItem('currentUser');
+      if (!user) return;
+      fetch('users.json').then(res => res.json()).then(data => {
+        const userObj = data.users.find(u => u.username === user);
+        if (userObj) userObj.scores.game3 = finalScore;
+        else data.users.push({ username: user, scores: { game3: finalScore } });
+        fetch('users.json', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+      });
+    }
+
+
+    function exitGame() {
+      window.location.href = 'index.html';
+    }
+
+    window.onload = () => {
+      renderCards();
+      showLeaderboard();
+    };
+  </script>
+</body>
+</html>

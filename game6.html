@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Game 6: Fill in the Blank Race</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f7f9fc;
+      margin: 0;
+      padding: 0;
+    }
+    nav {
+      background-color: #4CAF50;
+      padding: 10px 20px;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    nav h1 {
+      margin: 0;
+      font-size: 20px;
+    }
+    nav .nav-links a {
+      color: white;
+      text-decoration: none;
+      margin-left: 20px;
+      font-weight: bold;
+    }
+    nav .nav-links a:hover {
+      text-decoration: underline;
+    }
+    .container {
+      padding: 20px;
+      max-width: 800px;
+      margin: auto;
+      text-align: center;
+    }
+    .option {
+      display: inline-block;
+      background-color: #ffe082;
+      padding: 10px 20px;
+      margin: 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 18px;
+    }
+    .option:hover {
+      background-color: #ffd54f;
+    }
+    #timer {
+      font-size: 20px;
+      margin-top: 10px;
+    }
+    #score {
+      font-size: 18px;
+      margin-top: 15px;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <h1>English Games</h1>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="login.html">Login</a>
+    </div>
+  </nav>
+  <div class="container">
+    <h2>Fill in the Blank Race</h2>
+    <div id="sentence" style="font-size: 24px; margin-bottom: 20px;"></div>
+    <div id="options"></div>
+    <div id="timer">Time Left: <span id="time">10</span>s</div>
+    <div id="score">Score: 0</div>
+  </div>
+
+  <script>
+    const questions = [
+      { sentence: "I ___ to school every day.", answer: "go", options: ["go", "eat", "play"] },
+      { sentence: "She ___ a sandwich.", answer: "eats", options: ["run", "eats", "sleep"] },
+      { sentence: "We ___ at night.", answer: "sleep", options: ["jump", "sleep", "sing"] },
+      { sentence: "They ___ the guitar well.", answer: "play", options: ["play", "drive", "climb"] },
+      { sentence: "You ___ very fast.", answer: "run", options: ["run", "walk", "cook"] }
+    ];
+
+    let score = 0;
+    let currentIndex = 0;
+    let timeLeft = 10;
+    let timerInterval;
+
+    function startQuestion() {
+      if (currentIndex >= questions.length) {
+        alert("Game over! Your score: " + score);
+        return;
+      }
+      timeLeft = 10;
+      document.getElementById("time").textContent = timeLeft;
+      const q = questions[currentIndex];
+      document.getElementById("sentence").textContent = q.sentence;
+      const options = document.getElementById("options");
+      options.innerHTML = "";
+      q.options.sort(() => Math.random() - 0.5).forEach(opt => {
+        const div = document.createElement("div");
+        div.className = "option";
+        div.textContent = opt;
+        div.onclick = () => checkAnswer(opt);
+        options.appendChild(div);
+      });
+      clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+        timeLeft--;
+        document.getElementById("time").textContent = timeLeft;
+        if (timeLeft === 0) {
+          checkAnswer(null);
+        }
+      }, 1000);
+    }
+
+    function checkAnswer(selected) {
+      clearInterval(timerInterval);
+      if (selected === questions[currentIndex].answer) {
+        score += 10;
+      }
+      currentIndex++;
+      document.getElementById("score").textContent = "Score: " + score;
+      startQuestion();
+    }
+
+    window.onload = startQuestion;
+  </script>
+</body>
+</html>

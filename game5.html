@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Game 5: Verb Action Match</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f7f9fc;
+      margin: 0;
+      padding: 0;
+    }
+    nav {
+      background-color: #4CAF50;
+      padding: 10px 20px;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    nav h1 {
+      margin: 0;
+      font-size: 20px;
+    }
+    nav .nav-links a {
+      color: white;
+      text-decoration: none;
+      margin-left: 20px;
+      font-weight: bold;
+    }
+    nav .nav-links a:hover {
+      text-decoration: underline;
+    }
+    .container {
+      padding: 20px;
+      max-width: 900px;
+      margin: auto;
+      text-align: center;
+    }
+    .draggable {
+      display: inline-block;
+      background-color: #ffcc80;
+      padding: 10px 20px;
+      margin: 10px;
+      border-radius: 8px;
+      cursor: grab;
+      font-weight: bold;
+    }
+    .drop-zone {
+      display: inline-block;
+      width: 180px;
+      height: 180px;
+      margin: 15px;
+      border: 3px dashed #aaa;
+      border-radius: 10px;
+      position: relative;
+    }
+    .drop-zone img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 10px;
+    }
+    .drop-zone.correct {
+      border-color: green;
+    }
+    #score {
+      margin-top: 15px;
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <h1>English Games</h1>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="login.html">Login</a>
+    </div>
+  </nav>
+  <div class="container">
+    <h2>Verb Action Match</h2>
+    <p>Drag the correct verb to the matching action image!</p>
+    <div id="draggables"></div>
+    <div id="dropzones"></div>
+    <p id="score">Score: 0</p>
+  </div>
+
+  <script>
+    const actions = [
+      { verb: "run", image: "https://upload.wikimedia.org/wikipedia/commons/5/5f/Running_man.gif" },
+      { verb: "jump", image: "https://upload.wikimedia.org/wikipedia/commons/b/bd/Jumping_man.gif" },
+      { verb: "eat", image: "https://upload.wikimedia.org/wikipedia/commons/d/dc/Eating.gif" },
+      { verb: "sleep", image: "https://upload.wikimedia.org/wikipedia/commons/0/0f/Sleeping_cat.gif" }
+    ];
+
+    let score = 0;
+
+    function setupGame() {
+      const draggables = document.getElementById("draggables");
+      const dropzones = document.getElementById("dropzones");
+      draggables.innerHTML = "";
+      dropzones.innerHTML = "";
+
+      const shuffled = [...actions].sort(() => Math.random() - 0.5);
+      shuffled.forEach(item => {
+        const div = document.createElement("div");
+        div.className = "draggable";
+        div.textContent = item.verb;
+        div.draggable = true;
+        div.id = "verb-" + item.verb;
+        div.ondragstart = e => {
+          e.dataTransfer.setData("text/plain", item.verb);
+        };
+        draggables.appendChild(div);
+      });
+
+      actions.forEach(item => {
+        const zone = document.createElement("div");
+        zone.className = "drop-zone";
+        zone.ondragover = e => e.preventDefault();
+        zone.ondrop = e => handleDrop(e, item.verb, zone);
+        const img = document.createElement("img");
+        img.src = item.image;
+        zone.appendChild(img);
+        dropzones.appendChild(zone);
+      });
+    }
+
+    function handleDrop(e, correctVerb, zone) {
+      const droppedVerb = e.dataTransfer.getData("text/plain");
+      if (droppedVerb === correctVerb) {
+        zone.classList.add("correct");
+        score += 10;
+        document.getElementById("score").textContent = "Score: " + score;
+        document.getElementById("verb-" + droppedVerb).remove();
+        if (document.querySelectorAll(".draggable").length === 0) {
+          setTimeout(setupGame, 1500);
+        }
+      }
+    }
+
+    window.onload = setupGame;
+  </script>
+</body>
+</html>

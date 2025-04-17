@@ -1,0 +1,261 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Game 2: Picture Word Builder</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f7f9fc;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+    nav {
+      background-color: #4CAF50;
+      padding: 10px 20px;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    nav h1 {
+      margin: 0;
+      font-size: 20px;
+    }
+    nav .nav-links a {
+      color: white;
+      text-decoration: none;
+      margin-left: 20px;
+      font-weight: bold;
+    }
+    nav .nav-links a:hover {
+      text-decoration: underline;
+    }
+    .container {
+      padding: 20px;
+      max-width: 700px;
+      margin: auto;
+    }
+    img {
+      width: 200px;
+      margin: 20px 0;
+      border-radius: 12px;
+      border: 2px solid #ccc;
+    }
+    select, button {
+      font-size: 16px;
+      padding: 10px;
+      margin: 10px;
+    }
+    #blanks, #letters {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 10px 0;
+    }
+    .letter-box, .blank-box {
+      width: 50px;
+      height: 50px;
+      font-size: 24px;
+      border: 2px solid #555;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      background-color: #fff;
+      border-radius: 5px;
+    }
+    .blank-box {
+      background-color: #eef;
+    }
+    .hidden {
+      display: none;
+    }
+    #translations {
+      font-size: 14px;
+      color: #444;
+      margin-top: 10px;
+    }
+    #message {
+      font-size: 18px;
+      margin: 10px 0;
+      color: green;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <h1>English Games</h1>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="login.html">Login</a>
+    </div>
+  </nav>
+
+  <div class="container">
+    <h1>Guess the Word!</h1>
+    <p>Select difficulty:
+      <select id="difficultySelect">
+        <option value="easy">Easy</option>
+        <option value="medium">Medium</option>
+        <option value="hard">Hard</option>
+      </select>
+      <button onclick="startGame()">Start Game</button>
+    </p>
+
+    <img id="picture" src="" alt="Word Image" />
+    <div id="blanks"></div>
+    <div id="letters"></div>
+
+    <button id="hintButton">Show Hint</button>
+    <p id="hint" class="hidden"></p>
+
+    <div id="translations" class="hidden"></div>
+
+    <p id="message"></p>
+    <button id="nextButton" class="hidden">Next Word</button>
+  </div>
+
+  <script>
+    const wordBank = {
+      easy: [
+        {
+          word: "apple", image: "https://upload.wikimedia.org/wikipedia/commons/1/15/Red_Apple.jpg", hint: "A sweet red fruit.",
+          tagalog: "mansanas", bahasa: "apel"
+        },
+        {
+          word: "dog", image: "https://upload.wikimedia.org/wikipedia/commons/7/7e/Cute_dog.jpg", hint: "Man's best friend.",
+          tagalog: "aso", bahasa: "anjing"
+        },
+        {
+          word: "sun", image: "https://upload.wikimedia.org/wikipedia/commons/4/4c/Sun_white.jpg", hint: "It's bright and in the sky.",
+          tagalog: "araw", bahasa: "matahari"
+        }
+      ],
+      medium: [
+        {
+          word: "chair", image: "https://upload.wikimedia.org/wikipedia/commons/6/6d/Modern_chair_design.jpg", hint: "You sit on it.",
+          tagalog: "silya", bahasa: "kursi"
+        },
+        {
+          word: "spoon", image: "https://upload.wikimedia.org/wikipedia/commons/f/fc/Spoon.jpg", hint: "Used for eating soup.",
+          tagalog: "kutsara", bahasa: "sendok"
+        },
+        {
+          word: "plant", image: "https://upload.wikimedia.org/wikipedia/commons/4/4e/Potted_plant.jpg", hint: "It grows with sunlight and water.",
+          tagalog: "halaman", bahasa: "tanaman"
+        }
+      ],
+      hard: [
+        {
+          word: "giraffe", image: "https://upload.wikimedia.org/wikipedia/commons/9/9f/Giraffe_standing.jpg", hint: "Tallest animal on land.",
+          tagalog: "dyirap", bahasa: "jerapah"
+        },
+        {
+          word: "blanket", image: "https://upload.wikimedia.org/wikipedia/commons/0/0c/Blanket.jpg", hint: "Keeps you warm at night.",
+          tagalog: "kumot", bahasa: "selimut"
+        },
+        {
+          word: "microscope", image: "https://upload.wikimedia.org/wikipedia/commons/1/1e/Microscope.jpg", hint: "Used to see very small things.",
+          tagalog: "mikroskopyo", bahasa: "mikroskop"
+        }
+      ]
+    };
+
+    let currentWord = "";
+    let filled = [];
+    let currentSet = [];
+    let currentIndex = 0;
+
+    function startGame() {
+      const level = document.getElementById("difficultySelect").value;
+      currentSet = [...wordBank[level]];
+      shuffleArray(currentSet);
+      currentIndex = 0;
+      loadWord();
+    }
+
+    function loadWord() {
+      const wordObj = currentSet[currentIndex];
+      currentWord = wordObj.word.toLowerCase();
+      filled = Array(currentWord.length).fill("");
+
+      document.getElementById("picture").src = wordObj.image;
+      document.getElementById("hint").textContent = wordObj.hint;
+      document.getElementById("hint").classList.add("hidden");
+
+      document.getElementById("translations").innerHTML =
+        `<strong>Tagalog:</strong> ${wordObj.tagalog} &nbsp;&nbsp; <strong>Bahasa:</strong> ${wordObj.bahasa}`;
+      document.getElementById("translations").classList.remove("hidden");
+
+      document.getElementById("message").textContent = "";
+      document.getElementById("nextButton").classList.add("hidden");
+
+      const blanks = document.getElementById("blanks");
+      blanks.innerHTML = "";
+      for (let i = 0; i < currentWord.length; i++) {
+        const box = document.createElement("div");
+        box.className = "blank-box";
+        box.textContent = "";
+        box.dataset.index = i;
+        blanks.appendChild(box);
+      }
+
+      const letters = document.getElementById("letters");
+      letters.innerHTML = "";
+      const shuffled = shuffleArray(currentWord.split(""));
+      shuffled.forEach(letter => {
+        const box = document.createElement("div");
+        box.className = "letter-box";
+        box.textContent = letter;
+        box.onclick = () => placeLetter(letter, box);
+        letters.appendChild(box);
+      });
+    }
+
+    function placeLetter(letter, box) {
+      for (let i = 0; i < filled.length; i++) {
+        if (filled[i] === "") {
+          filled[i] = letter;
+          document.querySelectorAll(".blank-box")[i].textContent = letter;
+          box.style.visibility = "hidden";
+          break;
+        }
+      }
+
+      if (filled.join("") === currentWord) {
+        document.getElementById("message").textContent = "🎉 Well done!";
+        saveScoreToLocal('game2', 10);
+        document.getElementById("nextButton").classList.remove("hidden");
+      }
+    }
+
+    function shuffleArray(arr) {
+      return arr.sort(() => Math.random() - 0.5);
+    }
+
+    document.getElementById("nextButton").onclick = () => {
+      currentIndex = (currentIndex + 1) % currentSet.length;
+      loadWord();
+    };
+
+    document.getElementById("hintButton").onclick = () => {
+      document.getElementById("hint").classList.remove("hidden");
+    };
+
+    function saveScoreToLocal(gameName, scoreValue) {
+      const user = localStorage.getItem('currentUser') || 'Guest';
+      let scores = JSON.parse(localStorage.getItem('scores')) || {};
+      scores[user] = scores[user] || { game1: 0, game2: 0, game3: 0 };
+      scores[user][gameName] = Math.max(scores[user][gameName], scoreValue);
+      localStorage.setItem('scores', JSON.stringify(scores));
+    }
+
+    showLeaderboard('game2');
+  </script>
+</body>
+</html>

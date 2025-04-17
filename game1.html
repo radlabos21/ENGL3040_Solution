@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f7f9fc;
+      margin: 0;
+      padding: 0;
+    }
+    nav {
+      background-color: #4CAF50;
+      padding: 10px 20px;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    nav h1 {
+      margin: 0;
+      font-size: 20px;
+    }
+    nav .nav-links a {
+      color: white;
+      text-decoration: none;
+      margin-left: 20px;
+      font-weight: bold;
+    }
+    nav .nav-links a:hover {
+      text-decoration: underline;
+    }
+    .container {
+      padding: 20px;
+      max-width: 800px;
+      margin: auto;
+    }
+  </style>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fruit Word Catch Game</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #87CEEB;
+            font-family: 'Comic Sans MS', Arial, sans-serif;
+        }
+        canvas {
+            border: 2px solid #333;
+            background-color: #F0F8FF;
+        }
+        #gameOver {
+            position: absolute;
+            text-align: center;
+            display: none;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        #restartBtn {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        #restartBtn:hover {
+            background-color: #45a049;
+        }
+        #controls {
+            margin-bottom: 10px;
+        }
+        #muteBtn {
+            padding: 5px 10px;
+            font-size: 14px;
+            cursor: pointer;
+            background-color: #FFA500;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        #muteBtn:hover {
+            background-color: #e69500;
+        }
+    </style>
+</head>
+<body>
+
+  <nav>
+    <h1>English Games</h1>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="login.html">Login</a>
+    </div>
+  </nav>
+
+<div class='container'>
+    <div id="controls">
+        <button id="muteBtn">Mute Music</button>
+    </div>
+    <canvas id="gameCanvas" width="600" height="600"></canvas>
+    <div id="gameOver">
+        <h2>Game Over</h2>
+        <p>Your Score: <span id="finalScore">0</span></p>
+        <button id="restartBtn">Restart</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const gameOverScreen = document.getElementById('gameOver');
+        const finalScoreText = document.getElementById('finalScore');
+        const restartBtn = document.getElementById('restartBtn');
+        const muteBtn = document.getElementById('muteBtn');
+
+        // Game data
+        const fruits = [
+            { word: 'apple', img: createFruitImage('🍎') },
+            { word: 'banana', img: createFruitImage('🍌') },
+            { word: 'orange', img: createFruitImage('🍊') },
+            { word: 'grape', img: createFruitImage('🍇') },
+            { word: 'mango', img: createFruitImage('🥭') }
+        ];
+
+        // Create fruit image (using emoji as placeholder)
+        function createFruitImage(emoji) {
+            const img = new Image();
+            const canvas = document.createElement('canvas');
+            canvas.width = 40;
+            canvas.height = 40;
+            const ctx = canvas.getContext('2d');
+            ctx.font = '30px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(emoji, 20, 20);
+            img.src = canvas.toDataURL();
+            return img;
+        }
+
+        // Game objects
+        let basket = {
+            x: canvas.width / 2 - 50,
+            width: 100,
+            height: 50,
+            speed: 5,
+            word: fruits[0].word
+        };
+        let fallingFruits = [];
+        let score = 0;
+        let lives = 3;
+        let gameOver = false;
+        let dropSpeed = 2;
+        let frameCount = 0;
+        let isMuted = false;
+
+        // Sound effects and background music
+        const sounds = {
+            score: new Audio('https://freesound.org/data/previews/269/269693_5094388-lq.mp3'),
+            miss: new Audio('https://freesound.org/data/previews/342/342759_5769988-lq.mp3'),
+            error: new Audio('https://freesound.org/data/previews/320/320904_5260872-lq.mp3')
+        };
+        const bgMusic = new Audio('https://freesound.org/data/previews/503/503847_7031232-lq.mp3');
+        bgMusic.loop = true;
+        bgMusic.play().catch(() => {});
+
+        // Draw basket
+        function drawBasket() {
+            ctx.fillStyle = '#8B4513';
+            ctx.fillRect(basket.x, canvas.height - basket.height, basket.width, basket.height);
+            ctx.font = '20px Comic Sans MS';
+            ctx.fillStyle = '#FFF';
+            ctx.textAlign = 'center';
+            ctx.fillText(basket.word, basket.x + basket.width / 2, canvas.height - basket.height / 2);
+        }
+
+        // Draw falling fruits
+        function drawFruits() {
+            fallingFruits.forEach(fruit => {
+                ctx.drawImage(fruit.img, fruit.x, fruit.y, 40, 40);
+                ctx.font = '16px Comic Sans MS';
+                ctx.fillStyle = '#000';
+                ctx.textAlign = 'center';
+                ctx.fillText(fruit.word, fruit.x + 20, fruit.y + 50);
+            });
+        }
+
+        // Draw score and lives
+        function drawHUD() {
+            ctx.font = '24px Comic Sans MS';
+            ctx.fillStyle = '#000';
+            ctx.textAlign = 'left';
+            ctx.fillText('Score: ' + score, 10, 30);
+            ctx.fillText('Lives: ' + lives, 10, 60);
+        }
+
+        // Generate fruit
+        function generateFruit() {
+            const fruit = fruits[Math.floor(Math.random() * fruits.length)];
+            const x = Math.random() * (canvas.width - 40);
+            fallingFruits.push({ x, y: 0, word: fruit.word, img: fruit.img });
+        }
+
+        // Update game
+        function update() {
+            if (gameOver) return;
+
+            // Update basket
+            if (keys.ArrowLeft && basket.x > 0) {
+                basket.x -= basket.speed;
+            }
+            if (keys.ArrowRight && basket.x < canvas.width - basket.width) {
+                basket.x += basket.speed;
+            }
+
+            // Update fruits
+            if (frameCount % 60 === 0) {
+                generateFruit();
+                basket.word = fruits[Math.floor(Math.random() * fruits.length)].word;
+            }
+            fallingFruits.forEach((fruit, index) => {
+                fruit.y += dropSpeed;
+
+                // Detect collision
+                if (
+                    fruit.y + 40 > canvas.height - basket.height &&
+                    fruit.x + 40 > basket.x &&
+                    fruit.x < basket.x + basket.width
+                ) {
+                    if (fruit.word === basket.word) {
+                        score += 10;
+                        if (!isMuted) sounds.score.play();
+                    } else {
+                        lives--;
+                        if (!isMuted) sounds.error.play();
+                    }
+                    fallingFruits.splice(index, 1);
+                } else if (fruit.y > canvas.height) {
+                    if (!isMuted) sounds.miss.play();
+                    fallingFruits.splice(index, 1);
+                }
+            });
+
+            // Increase difficulty
+            if (frameCount % 300 === 0) {
+                dropSpeed += 0.2;
+            }
+
+            // Check game over
+            if (lives <= 0) {
+                saveScoreToLocal('game1', score);
+endGame();
+            }
+            frameCount++;
+        }
+
+        // Render
+        function render() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawBasket();
+            drawFruits();
+            drawHUD();
+        }
+
+        // Game loop
+        function gameLoop() {
+            update();
+            render();
+            if (!gameOver) {
+                requestAnimationFrame(gameLoop);
+            }
+        }
+
+        // End game
+        function endGame() {
+            gameOver = true;
+            gameOverScreen.style.display = 'block';
+            finalScoreText.textContent = score;
+            bgMusic.pause();
+        }
+
+        // Restart game
+        function restartGame() {
+            basket.x = canvas.width / 2 - 50;
+            fallingFruits = [];
+            score = 0;
+            lives = 3;
+            dropSpeed = 2;
+            frameCount = 0;
+            gameOver = false;
+            gameOverScreen.style.display = 'none';
+            if (!isMuted) bgMusic.play();
+            gameLoop();
+        }
+
+        // Keyboard controls
+        let keys = {};
+        document.addEventListener('keydown', (e) => {
+            keys[e.key] = true;
+        });
+        document.addEventListener('keyup', (e) => {
+            keys[e.key] = false;
+        });
+
+        // Mouse controls
+        canvas.addEventListener('mousemove', (e) => {
+            if (gameOver) return;
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            basket.x = Math.max(0, Math.min(mouseX - basket.width / 2, canvas.width - basket.width));
+        });
+
+        // Music control
+        muteBtn.addEventListener('click', () => {
+            isMuted = !isMuted;
+            muteBtn.textContent = isMuted ? 'Unmute Music' : 'Mute Music';
+            if (isMuted) {
+                bgMusic.pause();
+            } else {
+                bgMusic.play();
+            }
+        });
+
+        
+// Save score to localStorage and optionally to users.json
+function saveScoreToLocal(gameName, scoreValue) {
+    const user = localStorage.getItem('currentUser') || 'Guest';
+    let scores = JSON.parse(localStorage.getItem('scores')) || {};
+    scores[user] = scores[user] || { game1: 0, game2: 0, game3: 0 };
+    scores[user][gameName] = Math.max(scores[user][gameName], scoreValue);
+    localStorage.setItem('scores', JSON.stringify(scores));
+}
+
+
+
+// Start game
+        gameLoop();
+    </script>
+</div>
+</body>
+</html>
