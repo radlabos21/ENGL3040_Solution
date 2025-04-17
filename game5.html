@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Game 5: Verb Action Match</title>
+  <title>Game 5: Verb Definition Match</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
@@ -49,21 +49,23 @@
     }
     .drop-zone {
       display: inline-block;
-      width: 180px;
-      height: 180px;
+      width: 200px;
+      min-height: 60px;
       margin: 15px;
+      padding: 10px;
       border: 3px dashed #aaa;
       border-radius: 10px;
-      position: relative;
-    }
-    .drop-zone img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      border-radius: 10px;
+      vertical-align: top;
+      background-color: #fff;
+      transition: 0.3s ease;
     }
     .drop-zone.correct {
       border-color: green;
+      background-color: #e6ffe6;
+    }
+    .definition {
+      font-size: 14px;
+      color: #333;
     }
     #score {
       margin-top: 15px;
@@ -80,19 +82,19 @@
     </div>
   </nav>
   <div class="container">
-    <h2>Verb Action Match</h2>
-    <p>Drag the correct verb to the matching action image!</p>
+    <h2>Verb Definition Match</h2>
+    <p>Drag the correct verb to the matching definition!</p>
     <div id="draggables"></div>
     <div id="dropzones"></div>
     <p id="score">Score: 0</p>
   </div>
 
   <script>
-    const actions = [
-      { verb: "run", image: "https://upload.wikimedia.org/wikipedia/commons/5/5f/Running_man.gif" },
-      { verb: "jump", image: "https://upload.wikimedia.org/wikipedia/commons/b/bd/Jumping_man.gif" },
-      { verb: "eat", image: "https://upload.wikimedia.org/wikipedia/commons/d/dc/Eating.gif" },
-      { verb: "sleep", image: "https://upload.wikimedia.org/wikipedia/commons/0/0f/Sleeping_cat.gif" }
+    const definitions = [
+      { verb: "run", definition: "to move quickly on foot" },
+      { verb: "jump", definition: "to push oneself off the ground into the air" },
+      { verb: "eat", definition: "to put food in your mouth and chew" },
+      { verb: "sleep", definition: "to rest with eyes closed and no activity" }
     ];
 
     let score = 0;
@@ -103,8 +105,8 @@
       draggables.innerHTML = "";
       dropzones.innerHTML = "";
 
-      const shuffled = [...actions].sort(() => Math.random() - 0.5);
-      shuffled.forEach(item => {
+      const shuffledVerbs = [...definitions].sort(() => Math.random() - 0.5);
+      shuffledVerbs.forEach(item => {
         const div = document.createElement("div");
         div.className = "draggable";
         div.textContent = item.verb;
@@ -116,14 +118,17 @@
         draggables.appendChild(div);
       });
 
-      actions.forEach(item => {
+      definitions.forEach(item => {
         const zone = document.createElement("div");
         zone.className = "drop-zone";
         zone.ondragover = e => e.preventDefault();
         zone.ondrop = e => handleDrop(e, item.verb, zone);
-        const img = document.createElement("img");
-        img.src = item.image;
-        zone.appendChild(img);
+        
+        const p = document.createElement("p");
+        p.className = "definition";
+        p.textContent = item.definition;
+        zone.appendChild(p);
+
         dropzones.appendChild(zone);
       });
     }
