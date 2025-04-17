@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>English Learning Games</title>
+  <title>English Corner</title>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
@@ -12,7 +12,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
+      justify-content: flex-start;
       min-height: 100vh;
       animation: fadeInBody 1s ease-in;
     }
@@ -34,14 +34,8 @@
     }
 
     @keyframes slideDown {
-      0% {
-        transform: translateY(-50px);
-        opacity: 0;
-      }
-      100% {
-        transform: translateY(0);
-        opacity: 1;
-      }
+      0% { transform: translateY(-50px); opacity: 0; }
+      100% { transform: translateY(0); opacity: 1; }
     }
 
     nav h1 {
@@ -75,21 +69,15 @@
 
     .container {
       padding: 20px;
-      max-width: 800px;
+      max-width: 900px;
       margin: auto;
       text-align: center;
       animation: fadeIn 1.2s ease;
     }
 
     @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     h1 {
@@ -117,26 +105,65 @@
       transform: scale(1.05);
       box-shadow: 0 6px 12px rgba(0,0,0,0.15);
     }
+
+    .section {
+      background-color: #fff;
+      padding: 30px;
+      margin: 30px 0;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      text-align: left;
+    }
+
+    .section h2 {
+      color: #4CAF50;
+      margin-bottom: 10px;
+    }
+
+    .section p {
+      font-size: 16px;
+      line-height: 1.6;
+      color: #333;
+    }
   </style>
 </head>
 <body>
 
   <nav>
-    <h1>English Games</h1>
+    <h1>English Corner</h1>
     <div class="nav-links">
       <a href="index.html">Home</a>
       <a href="login.html">Login</a>
     </div>
   </nav>
 
-  <div class='container'>
-    <h1>Welcome to English Learning Games</h1>
+  <div class="container">
+    <h1>Welcome to English Corner</h1>
+    <p style="font-size: 18px; color: #444;">
+      Discover fun and effective resources to teach children English. Our engaging videos and interactive games make learning a joy for young learners. Start exploring today to spark a love for language!
+    </p>
+
     <a class="btn" href="game1.html">Game 1: Fruit Word Catch</a>
     <a class="btn" href="game2.html">Game 2: Picture Word Builder</a>
     <a class="btn" href="game3.html">Game 3: Synonym Match</a>
     <a class="btn" href="game4.html">Game 4: Sentence Fixer</a>
     <a class="btn" href="game5.html">Game 5: Verb Tense Sort</a>
     <a class="btn" href="game6.html">Game 6: Adjective Adventure</a>
+
+    <div class="section">
+      <h2>About Us</h2>
+      <p>At <strong>English Corner</strong>, we’re passionate about helping children learn English through play and creativity. Our team of educators and language experts designs videos and games that are fun, engaging, and tailored for young learners. Join us in making language learning an adventure!</p>
+    </div>
+
+    <div class="section">
+      <h2>Our Resources</h2>
+      <p>Our resources make teaching English simple and fun! Explore animated videos that teach vocabulary, pronunciation, and grammar through colorful stories. Our interactive games reinforce learning with exciting challenges. Perfect for ages 4–12, our tools are organized by skill level to suit every learner. No prep needed—just dive in!</p>
+    </div>
+
+    <div class="section">
+      <h2>Contact Us</h2>
+      <p>Have questions or ideas? We’d love to hear from you! Reach out via our contact form or email us at <a href="mailto:englishcorner@gmail.com">englishcorner@gmail.com</a>. Follow us on Instagram for updates and tips. We reply within 24 hours!</p>
+    </div>
   </div>
 
 </body>
